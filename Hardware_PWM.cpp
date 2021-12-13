@@ -22,21 +22,20 @@ namespace Hardware_PWM_Ver1
 	  * @brief  Constructor function
 	  * @param  _pxTimer: The address of timer handle variable
 	  *			_pxUsed_Channels: The address of PWM channel status variable
-	  *			_ulFrequency: PWM frequency according to Hz
-	  *			_xTimerIs32bit: True: Used timer is 32bit
-	  *							False: Used timer is 16bit
+	  *			_pxTimerSpecs_Data: All timer specifications. Frequency according to Hz
+	  *														  DeadTime value according to nS
 	  * @retval None
 	  */
-	Hardware_PWM::Hardware_PWM(TIM_HandleTypeDef* _pxTimer, PWM_Channels* _pxUsed_Channels, uint32_t _ulFrequency, bool _xTimerIs32bit)
+	Hardware_PWM::Hardware_PWM(TIM_HandleTypeDef* _pxTimer, PWM_Channels* _pxUsed_Channels, TimerSpecs_Type* _pxTimerSpecs_Data)
 	{
 		/****************************** Initial Values ******************************/
 		this->pxTimer = _pxTimer;
 		this->pxUsed_Channels = _pxUsed_Channels;
-		this->xTimerIs32bit = _xTimerIs32bit;
+		this->pxTimerSpecs_Data = _pxTimerSpecs_Data;
 		this->ulTimer_Prescaler = 0;
 		this->ulTimer_Period = 0;
 
-		this->Timer_Calculator(_ulFrequency);
+		this->Timer_Calculator(this->pxTimerSpecs_Data->_ulFrequency);
 		this->Timer_Init();
 		this->Stop_All_PWM();
 	}
@@ -62,34 +61,58 @@ namespace Hardware_PWM_Ver1
 		switch (_ucChannel)
 		{
 		case TIM_CHANNEL_1:
-			if (this->pxUsed_Channels->Channel1 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel1 == SingleMode)	//Check the channel status
 			{
 				this->pxTimer->Instance->CCR1 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_1);	//Start the PWM channel 1
 			}
+			else if (this->pxUsed_Channels->Channel1 == ComplementMode)
+			{
+				this->pxTimer->Instance->CCR1 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_1);	//Start the PWM channel 1
+				HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_1);	//Start the PWMN channel 1
+			}
 			break;
 
 		case TIM_CHANNEL_2:
-			if (this->pxUsed_Channels->Channel2 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel2 == SingleMode)	//Check the channel status
 			{
 				this->pxTimer->Instance->CCR2 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_2);	//Start the PWM channel 2
 			}
+			else if (this->pxUsed_Channels->Channel2 == ComplementMode)
+			{
+				this->pxTimer->Instance->CCR2 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_2);	//Start the PWM channel 2
+				HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_2);	//Start the PWMN channel 2
+			}
 			break;
 
 		case TIM_CHANNEL_3:	
-			if (this->pxUsed_Channels->Channel3 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel3 == SingleMode)	//Check the channel status
 			{
 				this->pxTimer->Instance->CCR3 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_3);	//Start the PWM channel 3
 			}
+			else if (this->pxUsed_Channels->Channel3 == ComplementMode)
+			{
+				this->pxTimer->Instance->CCR3 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_3);	//Start the PWM channel 3
+				HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_3);	//Start the PWMN channel 3
+			}
 			break;
 
 		case TIM_CHANNEL_4:
-			if (this->pxUsed_Channels->Channel4 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel4 == SingleMode)	//Check the channel status
 			{
 				this->pxTimer->Instance->CCR4 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_4);	//Start the PWM channel 4
+			}
+			else if (this->pxUsed_Channels->Channel4 == ComplementMode)
+			{
+				this->pxTimer->Instance->CCR4 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+				HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_4);	//Start the PWM channel 4
+				HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_4);	//Start the PWMN channel 4
 			}
 			break;
 		}
@@ -105,30 +128,50 @@ namespace Hardware_PWM_Ver1
 		switch (_ucChannel)
 		{
 		case TIM_CHANNEL_1:
-			if (this->pxUsed_Channels->Channel1 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel1 == SingleMode)	//Check the channel status
 			{
 				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_1);	//Stop the PWM channel 1
+			}
+			else if (this->pxUsed_Channels->Channel1 == ComplementMode)
+			{
+				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_1);		//Stop the PWM channel 1
+				HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_1);	//Stop the PWMN channel 1
 			}
 			break;
 
 		case TIM_CHANNEL_2:
-			if (this->pxUsed_Channels->Channel2 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel2 == SingleMode)	//Check the channel status
 			{
 				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_2);	//Stop the PWM channel 2
+			}
+			else if (this->pxUsed_Channels->Channel2 == ComplementMode)
+			{
+				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_2);		//Stop the PWM channel 2
+				HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_2);	//Stop the PWMN channel 2
 			}
 			break;
 
 		case TIM_CHANNEL_3:
-			if (this->pxUsed_Channels->Channel3 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel3 == SingleMode)	//Check the channel status
 			{
 				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_3);	//Stop the PWM channel 3
+			}
+			else if (this->pxUsed_Channels->Channel3 == ComplementMode)
+			{
+				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_3);		//Stop the PWM channel 3
+				HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_3);	//Stop the PWMN channel 3
 			}
 			break;
 
 		case TIM_CHANNEL_4:
-			if (this->pxUsed_Channels->Channel4 == true)	//Check the channel status
+			if (this->pxUsed_Channels->Channel4 == SingleMode)	//Check the channel status
 			{
 				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_4);	//Stop the PWM channel 4
+			}
+			else if (this->pxUsed_Channels->Channel4 == ComplementMode)
+			{
+				HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_4);		//Stop the PWM channel 4
+				HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_4);	//Stop the PWMN channel 4
 			}
 			break;
 		}
@@ -141,28 +184,52 @@ namespace Hardware_PWM_Ver1
 	  */
 	void Hardware_PWM::Start_All_PWM(double _DutyCycle)
 	{
-		if (this->pxUsed_Channels->Channel1 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel1 == SingleMode)	//Check the channel status
 		{
 			this->pxTimer->Instance->CCR1 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_1);	//Start the PWM channel 1
 		}
+		else if (this->pxUsed_Channels->Channel1 == ComplementMode)
+		{
+			this->pxTimer->Instance->CCR1 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_1);	//Start the PWM channel 1
+			HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_1);	//Start the PWMN channel 1
+		}
 
-		if (this->pxUsed_Channels->Channel2 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel2 == SingleMode)	//Check the channel status
 		{
 			this->pxTimer->Instance->CCR2 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_2);	//Start the PWM channel 2
 		}
+		else if (this->pxUsed_Channels->Channel2 == ComplementMode)
+		{
+			this->pxTimer->Instance->CCR2 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_2);	//Start the PWM channel 2
+			HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_2);	//Start the PWMN channel 2
+		}
 
-		if (this->pxUsed_Channels->Channel3 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel3 == SingleMode)	//Check the channel status
 		{
 			this->pxTimer->Instance->CCR3 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_3);	//Start the PWM channel 3
 		}
+		else if (this->pxUsed_Channels->Channel3 == ComplementMode)
+		{
+			this->pxTimer->Instance->CCR3 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_3);	//Start the PWM channel 3
+			HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_3);	//Start the PWMN channel 3
+		}
 
-		if (this->pxUsed_Channels->Channel4 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel4 == SingleMode)	//Check the channel status
 		{
 			this->pxTimer->Instance->CCR4 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
 			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_4);	//Start the PWM channel 4
+		}
+		else if (this->pxUsed_Channels->Channel4 == ComplementMode)
+		{
+			this->pxTimer->Instance->CCR4 = (uint32_t)(this->ulTimer_Period * (_DutyCycle / 100.0));	//Set the Capture Compare Register value
+			HAL_TIM_PWM_Start(this->pxTimer, TIM_CHANNEL_4);	//Start the PWM channel 4
+			HAL_TIMEx_PWMN_Start(this->pxTimer, TIM_CHANNEL_4);	//Start the PWMN channel 4
 		}
 	}
 
@@ -173,24 +240,44 @@ namespace Hardware_PWM_Ver1
 	  */
 	void Hardware_PWM::Stop_All_PWM(void)
 	{
-		if (this->pxUsed_Channels->Channel1 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel1 == SingleMode)	//Check the channel status
 		{
 			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_1);	//Stop the PWM channel 1
 		}
+		else if (this->pxUsed_Channels->Channel1 == ComplementMode)
+		{
+			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_1);		//Stop the PWM channel 1
+			HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_1);	//Stop the PWMN channel 1
+		}
 
-		if (this->pxUsed_Channels->Channel2 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel2 == SingleMode)	//Check the channel status
 		{
 			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_2);	//Stop the PWM channel 2
 		}
+		else if (this->pxUsed_Channels->Channel2 == ComplementMode)
+		{
+			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_2);		//Stop the PWM channel 2
+			HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_2);	//Stop the PWMN channel 2
+		}
 
-		if (this->pxUsed_Channels->Channel3 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel3 == SingleMode)	//Check the channel status
 		{
 			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_3);	//Stop the PWM channel 3
 		}
+		else if (this->pxUsed_Channels->Channel3 == ComplementMode)
+		{
+			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_3);		//Stop the PWM channel 3
+			HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_3);	//Stop the PWMN channel 3
+		}
 
-		if (this->pxUsed_Channels->Channel4 == true)	//Check the channel status
+		if (this->pxUsed_Channels->Channel4 == SingleMode)	//Check the channel status
 		{
 			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_4);	//Stop the PWM channel 4
+		}
+		else if (this->pxUsed_Channels->Channel4 == ComplementMode)
+		{
+			HAL_TIM_PWM_Stop(this->pxTimer, TIM_CHANNEL_4);		//Stop the PWM channel 4
+			HAL_TIMEx_PWMN_Stop(this->pxTimer, TIM_CHANNEL_4);	//Stop the PWMN channel 4
 		}
 	}
 
@@ -214,7 +301,8 @@ namespace Hardware_PWM_Ver1
 	void Hardware_PWM::Change_Frequency(uint32_t _ulNewFrequency)
 	{
 		this->Stop_All_PWM();	//At first, stop all channels
-		this->Timer_Calculator(_ulNewFrequency);	//Choose the best values for timer period and timer prescaler
+		this->pxTimerSpecs_Data->_ulFrequency = _ulNewFrequency;		//Save the new timer frequency
+		this->Timer_Calculator(this->pxTimerSpecs_Data->_ulFrequency);	//Choose the best values for timer period and timer prescaler
 		this->Timer_Init();		//Initialize the timer
 	}
 
@@ -288,7 +376,7 @@ namespace Hardware_PWM_Ver1
 		sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
 		sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
 		sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
-		sBreakDeadTimeConfig.DeadTime = 0;
+		sBreakDeadTimeConfig.DeadTime = this->Timer_DeadTime_Calculator();
 		sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
 		sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
 		sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
@@ -312,7 +400,7 @@ namespace Hardware_PWM_Ver1
 
 		if (_ulFrequency < (Timer_Clock / 10))	//Limit the maximum frequency
 		{
-			if (this->xTimerIs32bit == true)	//The entered timer is 32 bit
+			if (this->pxTimerSpecs_Data->_xTimerIs32bit == true)	//The entered timer is 32 bit
 			{
 				do
 				{
@@ -333,6 +421,21 @@ namespace Hardware_PWM_Ver1
 				this->ulTimer_Period--;		//Because of timer
 			}
 		}
+	}
+
+	/**
+	  * @brief  This function calculates the deadtime register value according to deadtime (nS)
+	  *			Note: Deadtime registe value sholud not be bigger than timer deadtime register capacitance. It depends on the used timer.
+	  * @param  None
+	  * @retval Deadtime register value
+	  */
+	uint8_t Hardware_PWM::Timer_DeadTime_Calculator(void)
+	{
+		uint32_t DeadTime = 0;
+
+		DeadTime = (uint32_t)((this->Timer_Get_Frequency() / 1e9) * this->pxTimerSpecs_Data->_ulDeadTime);	//Calculate the DeadTime register value
+
+		return DeadTime;
 	}
 
 	/**
