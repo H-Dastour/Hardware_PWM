@@ -413,7 +413,7 @@ namespace Hardware_PWM_Ver1
 
 #ifdef STM32F3
 		if (this->pxTimer->Instance == TIM2 || this->pxTimer->Instance == TIM3 || this->pxTimer->Instance == TIM4 ||
-			this->pxTimer->Instance == TIM5 || this->pxTimer->Instance == TIM6 || this->pxTimer->Instance == TIM7) //These timers are connected to the APB1 bus clock ==> Max = 36MHz
+			this->pxTimer->Instance == TIM6 || this->pxTimer->Instance == TIM7) //These timers are connected to the APB1 bus clock ==> Max = 36MHz
 		{
 			if (HAL_RCC_GetHCLKFreq() == HAL_RCC_GetPCLK1Freq())	//It means APB1 Prescaler = 1
 			{
