@@ -1,10 +1,13 @@
 /**
   ******************************************************************************
   * @file    Hardware_PWM.cpp
-  * @author  H.Dastour
+  * @author  Hadi Dastour
+  *	@version 1.0.0	
   * @brief   Hardware PWM controller class.
   *          This file provides firmware functions to manage a hardware PWM
   *          of a Timer.
+  * @support Email: Hadi.Dastoor@gmail.com		
+  *			 Github: https://github.com/H-Dastour
   ******************************************************************************
 **/
 
